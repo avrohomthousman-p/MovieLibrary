@@ -24,16 +24,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 class BrowseActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //Temporary data until I set up the API
+        val url = "https://media.istockphoto.com/id/814423752/photo/eye-of-model-with-colorful-art-make-up-close-up.jpg?s=612x612&w=0&k=20&c=l15OdMWjgCKycMMShP8UK94ELVlEGvt7GmB_esHWPYE="
         val movies = listOf(
-            Movie("Inception", "", false),
-            Movie("The Matrix", "", false),
-            Movie("Interstellar", "", false)
+            Movie("Inception", url, false),
+            Movie("The Matrix", url, false),
+            Movie("Interstellar", url, false)
         )
 
         setContent {
@@ -67,9 +69,9 @@ class BrowseActivity : ComponentActivity() {
                         text = movie.title,
                         fontSize = 20.sp,
                     )
-                    Image(
-                        painter = painterResource(id = R.drawable.movie_pic), //temp pic
-                        contentDescription = "Movie poster",
+                    AsyncImage(
+                        model = movie.imgURL,
+                        contentDescription = "${movie.title} cover picture",
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
