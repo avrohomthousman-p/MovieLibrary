@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.androidx.activity)
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)

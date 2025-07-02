@@ -1,4 +1,5 @@
 package com.greatmachine.movielibrary
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun BrowseButton() {
         Button(onClick = {
-            // TODO: navigate to browse activity
+            startActivity(Intent(this, BrowseActivity::class.java))
         }) {
             Text("Browse All")
         }
