@@ -8,5 +8,5 @@ data class Movie(
     @PrimaryKey val id: Int,
     val title: String,
     val imgURL: String,
-    val favorited: Boolean
+    var favorited: Boolean
 )
