@@ -2,6 +2,7 @@ package com.greatmachine.movielibrary
 
 import android.graphics.drawable.Icon
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -40,17 +41,37 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.room.Database
 import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 
+const val BROWSE_FAVS_KEY = "browseFavs"
 
 class BrowseActivity : ComponentActivity() {
     private var uiState: DataQueryState by mutableStateOf(DataQueryState.Loading)
+    private var browsingFavrourites: Boolean = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        browsingFavrourites = intent.getBooleanExtra(BROWSE_FAVS_KEY, false)
+
+        if (browsingFavrourites){
+            getMoviesFromDatabase()
+        }
+        else {
+            getMoviesFromAPI()
+        }
+
+
+        setContent{
+            MainDisplay(uiState)
+        }
+    }
+
+
+    fun getMoviesFromAPI() {
         lifecycleScope.launch {
             val result: List<Movie>? = discoverMovies()
 
@@ -61,11 +82,23 @@ class BrowseActivity : ComponentActivity() {
                 uiState = DataQueryState.Success(result)
             }
         }
+    }
 
 
-        setContent{
-            MainDisplay(uiState)
+    fun getMoviesFromDatabase() {
+        lifecycleScope.launch{
+            try{
+                val movies = MovieDatabaseInstance.getInstance(applicationContext)
+                    .movieDao().getAllFavorites()
+
+                uiState = DataQueryState.Success(movies)
+            }
+            catch (e: Exception){
+                uiState = DataQueryState.Error
+                Log.e("failure", "Failed to fetch favorite movies", e)
+            }
         }
+
     }
 
 
@@ -104,11 +137,13 @@ class BrowseActivity : ComponentActivity() {
 
     @Composable
     fun LoadedContent(movies: List<Movie>) {
+        val bannerText = if (browsingFavrourites) "My Favorurites" else "Discover New Movies"
+
         Column (
             modifier = Modifier.fillMaxSize()
         ){
             Text(
-                "Discover New Movies",
+                bannerText,
                 fontSize = 24.sp,
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 textAlign = TextAlign.Center
@@ -138,6 +173,10 @@ class BrowseActivity : ComponentActivity() {
 
         val contentDescription = if (isFavorited) "Un-Favorite" else "Favorite"
         val backgroundColor = if (isFavorited) Color.Red else Color.White
+
+        if (!isFavorited and browsingFavrourites){
+            return
+        }
 
 
         Card(
@@ -203,3 +242,4 @@ sealed interface DataQueryState {
     data class Success(val movies: List<Movie>) : DataQueryState
     object Error : DataQueryState
 }
+

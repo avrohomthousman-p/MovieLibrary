@@ -43,7 +43,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun FavoritesButton() {
         Button(onClick = {
-            // TODO: navigate to favorites activity
+            val intent = Intent(this, BrowseActivity::class.java)
+            intent.putExtra(BROWSE_FAVS_KEY, true)
+            startActivity(intent)
         }) {
             Text("Browse Favourites")
         }
@@ -53,7 +55,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun BrowseButton() {
         Button(onClick = {
-            startActivity(Intent(this, BrowseActivity::class.java))
+            val intent = Intent(this, BrowseActivity::class.java)
+            intent.putExtra(BROWSE_FAVS_KEY, false)
+            startActivity(intent)
         }) {
             Text("Browse All")
         }
