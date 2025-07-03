@@ -1,5 +1,6 @@
 package com.greatmachine.movielibrary
 
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,7 +38,11 @@ import com.greatmachine.movielibrary.db.Movie
 import com.greatmachine.movielibrary.utils.discoverMovies
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.room.Database
+import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 
 
 class BrowseActivity : ComponentActivity() {
@@ -127,6 +133,13 @@ class BrowseActivity : ComponentActivity() {
 
     @Composable
     fun MovieItem(movie: Movie) {
+        var isFavorited by remember { mutableStateOf(movie.favorited) }
+
+
+        val contentDescription = if (isFavorited) "Un-Favorite" else "Favorite"
+        val backgroundColor = if (isFavorited) Color.Red else Color.White
+
+
         Card(
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             shape = RoundedCornerShape(8.dp),
@@ -147,15 +160,18 @@ class BrowseActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
                     IconButton(
-                        onClick = { toggleFavorite() },
+                        onClick = {
+                            isFavorited = !isFavorited
+                            toggleFavorite(movie)
+                        },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
-                            .background(Color.White.copy(alpha = 0.6f), shape = CircleShape)
+                            .background(backgroundColor, shape = CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorite ${movie.title}"
+                            contentDescription = contentDescription
                         )
                     }
                 }
@@ -173,8 +189,11 @@ class BrowseActivity : ComponentActivity() {
     }
 
 
-    fun toggleFavorite() : Unit {
-        //TODO
+    fun toggleFavorite(movie: Movie) : Unit {
+        lifecycleScope.launch {
+            movie.favorited = !movie.favorited
+            MovieDatabaseInstance.getInstance(applicationContext).movieDao().updateMovie(movie)
+        }
     }
 }
 
