@@ -1,5 +1,6 @@
 package com.greatmachine.movielibrary
 
+import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
@@ -198,6 +200,8 @@ class BrowseActivity : ComponentActivity() {
                         contentDescription = "${movie.title} cover",
                         modifier = Modifier.fillMaxSize()
                     )
+
+                    //Favorites Button
                     IconButton(
                         onClick = {
                             isFavorited = !isFavorited
@@ -210,6 +214,23 @@ class BrowseActivity : ComponentActivity() {
                     ) {
                         Icon(
                             imageVector = Icons.Default.FavoriteBorder,
+                            contentDescription = contentDescription
+                        )
+                    }
+
+                    //Info button
+                    IconButton(
+                        onClick = {
+                            val intent = Intent(applicationContext, MovieDetailsActivity::class.java)
+                            intent.putExtra(MOVIE_ID_KEY, movie.id)
+                            startActivity(intent)
+                        },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
                             contentDescription = contentDescription
                         )
                     }
