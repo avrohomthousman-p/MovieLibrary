@@ -1,4 +1,4 @@
-package com.greatmachine.movielibrary
+package com.greatmachine.movielibrary.utils
 
 data class Movie(
     val title: String,

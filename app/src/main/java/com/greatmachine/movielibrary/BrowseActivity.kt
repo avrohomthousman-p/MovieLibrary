@@ -1,17 +1,14 @@
 package com.greatmachine.movielibrary
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import java.net.URL
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -20,36 +17,69 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
+import com.greatmachine.movielibrary.utils.Movie
+import com.greatmachine.movielibrary.utils.discoverMovies
+import kotlinx.coroutines.launch
 
 class BrowseActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Temporary data until I set up the API
-        val url = "https://media.istockphoto.com/id/814423752/photo/eye-of-model-with-colorful-art-make-up-close-up.jpg?s=612x612&w=0&k=20&c=l15OdMWjgCKycMMShP8UK94ELVlEGvt7GmB_esHWPYE="
-        val movies = listOf(
-            Movie("Inception", url, false),
-            Movie("The Matrix", url, false),
-            Movie("Interstellar", url, false)
-        )
+        lifecycleScope.launch {
+            val result: List<Movie>? = discoverMovies()
+
+            if (result.isNullOrEmpty()){
+                runOnUiThread { displayLoadingError() }
+            }
+            else {
+                runOnUiThread {
+                    setContent{
+                        LoadedContent(result)
+                    }
+                }
+            }
+        }
+
 
         setContent {
-            Column (
-                modifier = Modifier.fillMaxSize()
-            ){
-                Text(
-                    "Discover New Movies",
-                    fontSize = 24.sp,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    textAlign = TextAlign.Center
-                )
-                MovieList(movies)
-            }
+            Text("Loading. Please wait...",
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+
+    fun displayLoadingError(){
+        setContent {
+            Text(
+                "Unable to connect",
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+
+    @Composable
+    fun LoadedContent(movies: List<Movie>) {
+        Column (
+            modifier = Modifier.fillMaxSize()
+        ){
+            Text(
+                "Discover New Movies",
+                fontSize = 24.sp,
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                textAlign = TextAlign.Center
+            )
+            MovieList(movies)
         }
     }
 
@@ -72,8 +102,9 @@ class BrowseActivity : ComponentActivity() {
                     AsyncImage(
                         model = movie.imgURL,
                         contentDescription = "${movie.title} cover picture",
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp).height(300.dp)
                     )
+                    //TODO: add a favorite button
                 }
             }
         }
