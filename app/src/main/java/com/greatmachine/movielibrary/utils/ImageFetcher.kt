@@ -20,7 +20,7 @@ suspend fun discoverMovies(applicationContext: Context): List<Movie>? = withCont
     val movieList: List<Movie>?
     val response = StringBuilder()
 
-    val url = URL("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US")
+    val url = URL("https://api.themoviedb.org/3/trending/movie/day?language=en-US")
     val connection = url.openConnection() as HttpURLConnection
     connection.setRequestProperty("accept", "application/json")
     connection.setRequestProperty("Authorization", "Bearer ${BuildConfig.ACCESS_TOKEN}")
