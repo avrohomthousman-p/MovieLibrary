@@ -1,3 +1,11 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties().apply {
+    load(FileInputStream(rootProject.file(".env")))
+}
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +16,7 @@ android {
     namespace = "com.greatmachine.movielibrary"
     compileSdk = 36
 
+
     defaultConfig {
         applicationId = "com.greatmachine.movielibrary"
         minSdk = 24
@@ -16,6 +25,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+        val accessToken: String = localProperties["ACCESS_TOKEN"] as? String
+            ?: throw GradleException("ACCESS_TOKEN is missing from local.properties")
+
+        buildConfigField("String", "ACCESS_TOKEN", "\"$accessToken\"")
     }
 
     buildTypes {
@@ -30,6 +45,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -61,4 +77,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.coil)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
