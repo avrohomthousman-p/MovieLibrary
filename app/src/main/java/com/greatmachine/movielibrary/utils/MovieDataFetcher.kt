@@ -9,6 +9,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.NumberFormat
+import java.util.Locale
 
 
 suspend fun getMovieData(movieId: Int): JSONObject = withContext(Dispatchers.IO) {
@@ -46,6 +48,57 @@ suspend fun getMovieData(movieId: Int): JSONObject = withContext(Dispatchers.IO)
 
 
 fun cleanJsonData(data: JSONObject){
+    replaceUrl(data)
+
+    convertGenresToTextDisplay(data)
+
+    replaceAdultWithTextDisplay(data)
+
+    convertBudgetToTextDisplay(data)
+}
+
+
+private fun replaceUrl(data: JSONObject) {
     val imgPath = data.getString("poster_path")
-    data.put("image_url1", BASE_URL + imgPath)
+    data.put("image_url", BASE_URL + imgPath)
+}
+
+
+private fun convertGenresToTextDisplay(data: JSONObject) {
+    val genreData = data.getJSONArray("genres")
+    val genreNames: StringBuilder = StringBuilder()
+
+    for (i in 0 until genreData.length()) {
+        val genre = genreData.getJSONObject(i)
+        val name: String = genre.getString("name")
+        genreNames.append(name)
+        genreNames.append(", ")
+    }
+
+    //remove trailing comma
+    genreNames.deleteCharAt(genreNames.length - 1)
+    genreNames.deleteCharAt(genreNames.length - 1)
+
+    data.put("genres", genreNames.toString())
+}
+
+
+private fun replaceAdultWithTextDisplay(data: JSONObject) {
+    val isAdult = data.getBoolean("adult")
+    if (isAdult) {
+        data.put("adult", "✅ Yes")
+    } else {
+        data.put("adult", "❌ No")
+    }
+}
+
+
+private fun convertBudgetToTextDisplay(data: JSONObject){
+    val budget = data.getInt("budget")
+
+    val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+    val budgetDisplay = formatter.format(budget)
+
+
+    data.put("budget", budgetDisplay)
 }

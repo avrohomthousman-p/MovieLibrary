@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieLibrary">
         <activity
+            android:name=".MovieDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".MovieListActivity"
             android:exported="false" />
         <activity
