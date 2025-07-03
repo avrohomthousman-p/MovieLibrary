@@ -192,7 +192,7 @@ class BrowseActivity : ComponentActivity() {
     fun toggleFavorite(movie: Movie) : Unit {
         lifecycleScope.launch {
             movie.favorited = !movie.favorited
-            MovieDatabaseInstance.getInstance(applicationContext).movieDao().updateMovie(movie)
+            MovieDatabaseInstance.getInstance(applicationContext).movieDao().saveMovie(movie)
         }
     }
 }
