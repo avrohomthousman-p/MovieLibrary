@@ -57,7 +57,7 @@ fun compileResponseToListOfMovies(response: String): List<Movie>? {
         val data = jsonData.getJSONObject(i)
 
         val url = BASE_URL + data.getString("poster_path")
-        val movie = Movie(data.getString("title"), url, false)
+        val movie = Movie(data.getString("title"), url, data.getInt("id"),false)
 
         movies.add(movie)
     }
