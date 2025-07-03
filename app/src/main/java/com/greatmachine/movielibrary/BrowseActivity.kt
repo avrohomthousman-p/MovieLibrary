@@ -73,7 +73,7 @@ class BrowseActivity : ComponentActivity() {
 
     fun getMoviesFromAPI() {
         lifecycleScope.launch {
-            val result: List<Movie>? = discoverMovies()
+            val result: List<Movie>? = discoverMovies(applicationContext)
 
             if (result.isNullOrEmpty()){
                 uiState = DataQueryState.Error

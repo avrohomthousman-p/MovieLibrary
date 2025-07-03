@@ -10,6 +10,9 @@ interface MovieDao {
     @Query("SELECT * FROM Movies WHERE favorited = 1")
     suspend fun getAllFavorites(): List<Movie>
 
+    @Query("SELECT * FROM Movies WHERE id in (:movieIds) ORDER BY id")
+    suspend fun getFavoritesFromMovieList(movieIds: List<Int>): List<Movie>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveMovie(movie: Movie)
 

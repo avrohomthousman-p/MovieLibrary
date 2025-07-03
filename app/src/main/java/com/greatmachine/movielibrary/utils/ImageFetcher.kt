@@ -1,7 +1,9 @@
 package com.greatmachine.movielibrary.utils
 
+import android.content.Context
 import com.greatmachine.movielibrary.BuildConfig
 import com.greatmachine.movielibrary.db.Movie
+import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -14,7 +16,8 @@ import java.net.URL
 const val BASE_URL = "https://image.tmdb.org/t/p/w500/"
 
 
-suspend fun discoverMovies(): List<Movie>? = withContext(Dispatchers.IO)  {
+suspend fun discoverMovies(applicationContext: Context): List<Movie>? = withContext(Dispatchers.IO)  {
+    val movieList: List<Movie>?
     val response = StringBuilder()
 
     val url = URL("https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US")
@@ -32,16 +35,22 @@ suspend fun discoverMovies(): List<Movie>? = withContext(Dispatchers.IO)  {
         }
 
         reader.close()
+        connection.disconnect()
+
+        movieList = compileResponseToListOfMovies(response.toString())
+        updateFavoritedValueFromDB(applicationContext, movieList)
+
+
     } catch (e: Exception) {
         e.printStackTrace()
         response.clear()
         response.append("ERROR: ")
         response.append(e.message)
-    } finally {
         connection.disconnect()
+        return@withContext null
     }
 
-    return@withContext compileResponseToListOfMovies(response.toString())
+    return@withContext movieList
 }
 
 
@@ -64,4 +73,27 @@ fun compileResponseToListOfMovies(response: String): List<Movie>? {
     }
 
     return movies
+}
+
+
+suspend fun updateFavoritedValueFromDB(applicationContext: Context, movies: List<Movie>?){
+    if (movies.isNullOrEmpty())
+        return
+
+
+    //Load correct favorited values from the DB
+    val movieIds = movies.map { it.id }
+    val correctFavValues = MovieDatabaseInstance
+                .getInstance(applicationContext)
+                .movieDao()
+                .getFavoritesFromMovieList(movieIds)
+                .associate { it.id to it.favorited }
+
+
+    //Copy them over to the existing movies
+    for (movie in movies){
+        if (correctFavValues.containsKey(movie.id)){
+            movie.favorited = correctFavValues[movie.id]!!
+        }
+    }
 }
