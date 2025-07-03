@@ -1,7 +1,6 @@
 package com.greatmachine.movielibrary
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -22,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
-import com.greatmachine.movielibrary.utils.Movie
+import com.greatmachine.movielibrary.db.Movie
 import com.greatmachine.movielibrary.utils.discoverMovies
 import kotlinx.coroutines.launch
 

@@ -1,6 +1,7 @@
 package com.greatmachine.movielibrary.utils
 
 import com.greatmachine.movielibrary.BuildConfig
+import com.greatmachine.movielibrary.db.Movie
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -57,7 +58,7 @@ fun compileResponseToListOfMovies(response: String): List<Movie>? {
         val data = jsonData.getJSONObject(i)
 
         val url = BASE_URL + data.getString("poster_path")
-        val movie = Movie(data.getString("title"), url, data.getInt("id"),false)
+        val movie = Movie(data.getInt("id"), data.getString("title"), url,false)
 
         movies.add(movie)
     }
