@@ -49,7 +49,7 @@ import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 const val BROWSE_FAVS_KEY = "browseFavs"
 
 class BrowseActivity : ComponentActivity() {
-    private var uiState: DataQueryState by mutableStateOf(DataQueryState.Loading)
+    private var uiState: MoviesQueryState by mutableStateOf(MoviesQueryState.Loading)
     private var browsingFavrourites: Boolean = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,10 +76,10 @@ class BrowseActivity : ComponentActivity() {
             val result: List<Movie>? = discoverMovies(applicationContext)
 
             if (result.isNullOrEmpty()){
-                uiState = DataQueryState.Error
+                uiState = MoviesQueryState.Error
             }
             else {
-                uiState = DataQueryState.Success(result)
+                uiState = MoviesQueryState.Success(result)
             }
         }
     }
@@ -91,10 +91,10 @@ class BrowseActivity : ComponentActivity() {
                 val movies = MovieDatabaseInstance.getInstance(applicationContext)
                     .movieDao().getAllFavorites()
 
-                uiState = DataQueryState.Success(movies)
+                uiState = MoviesQueryState.Success(movies)
             }
             catch (e: Exception){
-                uiState = DataQueryState.Error
+                uiState = MoviesQueryState.Error
                 Log.e("failure", "Failed to fetch favorite movies", e)
             }
         }
@@ -103,11 +103,11 @@ class BrowseActivity : ComponentActivity() {
 
 
     @Composable
-    fun MainDisplay(state: DataQueryState){
+    fun MainDisplay(state: MoviesQueryState){
         when (state) {
-            DataQueryState.Loading -> LoadingScreen()
-            DataQueryState.Error   -> ErrorScreen()
-            is DataQueryState.Success -> LoadedContent(state.movies)
+            MoviesQueryState.Loading -> LoadingScreen()
+            MoviesQueryState.Error   -> ErrorScreen()
+            is MoviesQueryState.Success -> LoadedContent(state.movies)
         }
     }
 
@@ -237,9 +237,9 @@ class BrowseActivity : ComponentActivity() {
 }
 
 
-sealed interface DataQueryState {
-    object Loading : DataQueryState
-    data class Success(val movies: List<Movie>) : DataQueryState
-    object Error : DataQueryState
+sealed interface MoviesQueryState {
+    object Loading : MoviesQueryState
+    data class Success(val movies: List<Movie>) : MoviesQueryState
+    object Error : MoviesQueryState
 }
 
