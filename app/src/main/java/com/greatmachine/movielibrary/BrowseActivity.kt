@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,8 +25,13 @@ import coil.compose.AsyncImage
 import com.greatmachine.movielibrary.db.Movie
 import com.greatmachine.movielibrary.utils.discoverMovies
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 class BrowseActivity : ComponentActivity() {
+    private var uiState: DataQueryState by mutableStateOf(DataQueryState.Loading)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -33,29 +39,42 @@ class BrowseActivity : ComponentActivity() {
             val result: List<Movie>? = discoverMovies()
 
             if (result.isNullOrEmpty()){
-                runOnUiThread { displayLoadingError() }
+                uiState = DataQueryState.Error
             }
             else {
-                runOnUiThread {
-                    setContent{
-                        LoadedContent(result)
-                    }
-                }
+                uiState = DataQueryState.Success(result)
             }
         }
 
 
-        setContent {
-            Text("Loading. Please wait...",
-                fontSize = 24.sp,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                textAlign = TextAlign.Center
-            )
+        setContent{
+            MainDisplay(uiState)
         }
     }
 
 
-    fun displayLoadingError(){
+    @Composable
+    fun MainDisplay(state: DataQueryState){
+        when (state) {
+            DataQueryState.Loading -> LoadingScreen()
+            DataQueryState.Error   -> ErrorScreen()
+            is DataQueryState.Success -> LoadedContent(state.movies)
+        }
+    }
+
+
+    @Composable
+    fun LoadingScreen(){
+        Text("Loading. Please wait...",
+            fontSize = 24.sp,
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+
+
+    @Composable
+    fun ErrorScreen(){
         setContent {
             Text(
                 "Unable to connect",
@@ -108,4 +127,11 @@ class BrowseActivity : ComponentActivity() {
             }
         }
     }
+}
+
+
+sealed interface DataQueryState {
+    object Loading : DataQueryState
+    data class Success(val movies: List<Movie>) : DataQueryState
+    object Error : DataQueryState
 }
