@@ -3,7 +3,7 @@ package com.greatmachine.movielibrary.db
 import androidx.room.*
 
 @Dao
-interface FavoriteMovieDAO {
+interface FavoritedMovieDAO {
     @Query("SELECT * FROM FavoriteMovies")
     suspend fun getAllFavorites(): List<FavoritedMovie>
 
