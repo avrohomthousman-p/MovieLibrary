@@ -3,7 +3,7 @@ import androidx.room.*
 
 @Dao
 interface CachedMovieDAO {
-    @Query("SELECT * FROM CachedMovies")
+    @Query("SELECT * FROM CachedMovies ORDER BY position ASC")
     suspend fun getAllCached(): List<CachedMovie>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

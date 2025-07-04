@@ -2,6 +2,7 @@ package com.greatmachine.movielibrary.utils
 
 import android.content.Context
 import com.greatmachine.movielibrary.BuildConfig
+import com.greatmachine.movielibrary.db.CachedMovie
 import com.greatmachine.movielibrary.db.FavoritedMovie
 import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +25,12 @@ suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = with
     if (isCacheStale(applicationContext)){
         //Load from the API and replace the cache
         val results: List<MovieData>? = queryAPIForMovies(applicationContext)
+
         if (results != null){
-            val asCachedMovie = results.map { it.convertToCachedMovie() }
+            val asCachedMovie = results.mapIndexed { index, item ->
+                CachedMovie(item.movie.id, item.movie.title, item.movie.imgURL, index)
+            }
+
             db.cachedMovieDao().clearCache()
             db.cachedMovieDao().cacheMovies(asCachedMovie)
             updateTimeStamp(applicationContext)

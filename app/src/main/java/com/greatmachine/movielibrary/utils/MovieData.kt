@@ -11,14 +11,4 @@ import com.greatmachine.movielibrary.db.FavoritedMovie
 data class MovieData(
     val movie: FavoritedMovie,
     var isFavorited: Boolean
-){
-
-    fun convertToCachedMovie() :CachedMovie {
-        return CachedMovie(movie.id, movie.title, movie.imgURL)
-    }
-
-
-    fun convertToFavoritedMovie() :FavoritedMovie {
-        return FavoritedMovie(movie.id, movie.title, movie.imgURL)
-    }
-}
+)

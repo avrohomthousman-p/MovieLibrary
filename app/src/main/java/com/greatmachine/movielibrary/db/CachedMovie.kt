@@ -7,7 +7,8 @@ import com.greatmachine.movielibrary.utils.MovieData
 data class CachedMovie(
     @PrimaryKey override val id: Int,
     override val title: String,
-    override val imgURL: String
+    override val imgURL: String,
+    val position: Int
 ) : BasicMovie {
 
 
