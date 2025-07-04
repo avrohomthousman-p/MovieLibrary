@@ -168,6 +168,10 @@ class MovieDetailsActivity : ComponentActivity() {
 }
 
 
+/**
+ * Class for tracking the state of the details query that is run to get the data
+ * needed in this activity.
+ */
 sealed interface DetailsQueryState {
     object Loading : DetailsQueryState
     data class Success(val movieData: JSONObject) : DetailsQueryState

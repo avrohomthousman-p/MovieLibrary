@@ -12,6 +12,9 @@ import java.text.NumberFormat
 import java.util.Locale
 
 
+/**
+ * Runs the API query to get detailed information about a specific movie.
+ */
 suspend fun getMovieData(movieId: Int): JSONObject = withContext(Dispatchers.IO) {
     val response = StringBuilder()
 
@@ -46,6 +49,10 @@ suspend fun getMovieData(movieId: Int): JSONObject = withContext(Dispatchers.IO)
 }
 
 
+/**
+ * Changes some of the data in the API response to a form that makes it
+ * easier to display on the front end.
+ */
 fun cleanJsonData(data: JSONObject){
     replaceUrl(data)
 
@@ -57,12 +64,20 @@ fun cleanJsonData(data: JSONObject){
 }
 
 
+/**
+ * Replaces the poster_path partial image url in the API response with
+ * a proper full url that the front end can use.
+ */
 private fun replaceUrl(data: JSONObject) {
     val imgPath = data.getString("poster_path")
     data.put("image_url", BASE_URL + imgPath)
 }
 
 
+/**
+ * Converts the genre data provided by the API into a much more
+ * usable format that can be easily displayed on the screen.
+ */
 private fun convertGenresToTextDisplay(data: JSONObject) {
     val genreData = data.getJSONArray("genres")
     val genreNames: StringBuilder = StringBuilder()
@@ -82,6 +97,10 @@ private fun convertGenresToTextDisplay(data: JSONObject) {
 }
 
 
+/**
+ * Replaces the boolean value (for adult content) provided by the API
+ * with text to display on the front end.
+ */
 private fun replaceAdultWithTextDisplay(data: JSONObject) {
     val isAdult = data.getBoolean("adult")
     if (isAdult) {
@@ -92,6 +111,10 @@ private fun replaceAdultWithTextDisplay(data: JSONObject) {
 }
 
 
+/**
+ * Formats the movie budget (given as an Int by the APT) into nicer output
+ * text with a dollar sign and commas.
+ */
 private fun convertBudgetToTextDisplay(data: JSONObject){
     val budget = data.getInt("budget")
 

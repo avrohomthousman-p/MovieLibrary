@@ -3,6 +3,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.greatmachine.movielibrary.utils.MovieData
 
+
+/**
+ * Movie object that is saved only because it is being cached as part of a API query.
+ */
 @Entity(tableName = "CachedMovies")
 data class CachedMovie(
     @PrimaryKey override val id: Int,

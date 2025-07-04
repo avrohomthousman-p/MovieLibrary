@@ -19,6 +19,9 @@ const val TIMESTAMP_KEY = "cache_updated_at"
 const val PREFS_KEY = "cache_data"
 
 
+/**
+ * Loads trending movies - either from the cache or the API whichever is appropriate.
+ */
 suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO){
     val db = MovieDatabaseInstance.getInstance(applicationContext)
 
@@ -48,12 +51,18 @@ suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = with
 }
 
 
+/**
+ * Sets the timestamp (for tracking when the cache was last set) to now.
+ */
 private fun updateTimeStamp(applicationContext: Context){
     val prefs = applicationContext.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
     prefs.edit().putLong(TIMESTAMP_KEY, System.currentTimeMillis()).apply()
 }
 
 
+/**
+ * Checks if the cache is outdated and needs to be replaced with newer data.
+ */
 private fun isCacheStale(applicationContext: Context): Boolean {
     val prefs = applicationContext.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
     val lastCacheTime = prefs.getLong(TIMESTAMP_KEY, 0L)
@@ -62,6 +71,9 @@ private fun isCacheStale(applicationContext: Context): Boolean {
 }
 
 
+/**
+ * Runs the API query to get trending movies.
+ */
 private suspend fun queryAPIForMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO)  {
     val movieList: List<MovieData>?
     val response = StringBuilder()
@@ -100,6 +112,10 @@ private suspend fun queryAPIForMovies(applicationContext: Context): List<MovieDa
 }
 
 
+/**
+ * Compiles the JSON results of the API query into actual MovieData instances
+ * with a default value of false for isFavorited.
+ */
 fun compileJSONToListOfMovies(response: String): List<MovieData>? {
     if (response.startsWith("ERROR")){
         return null
@@ -122,6 +138,11 @@ fun compileJSONToListOfMovies(response: String): List<MovieData>? {
 }
 
 
+/**
+ * Takes a list of MovieData objects and ensures that they all have correct values for isFavorited.
+ * When movies are retrieved from the cache or API, we cant know if they are favorited or not without
+ * checking to see if they are in the favorites table.
+ */
 suspend fun updateFavoritedValueFromDB(applicationContext: Context, movies: List<MovieData>?){
     if (movies.isNullOrEmpty())
         return

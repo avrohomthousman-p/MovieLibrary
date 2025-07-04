@@ -5,7 +5,9 @@ import androidx.room.Room
 import android.content.Context
 
 
-
+/**
+ * Singleton database reference object.
+ */
 object MovieDatabaseInstance {
     @Volatile
     private var INSTANCE: MovieDatabase? = null

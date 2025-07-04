@@ -1,6 +1,10 @@
 package com.greatmachine.movielibrary.db
 import androidx.room.*
 
+
+/**
+ * Class defining some simple database queries for the CachedMovie table.
+ */
 @Dao
 interface CachedMovieDAO {
     @Query("SELECT * FROM CachedMovies ORDER BY position ASC")
