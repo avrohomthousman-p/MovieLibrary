@@ -14,9 +14,50 @@ import java.net.URL
 
 
 const val BASE_URL = "https://image.tmdb.org/t/p/w500/"
+const val TIMESTAMP_KEY = "cache_updated_at"
+const val PREFS_KEY = "cache_data"
 
 
-suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO)  {
+suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO){
+    val db = MovieDatabaseInstance.getInstance(applicationContext)
+
+    if (isCacheStale(applicationContext)){
+        //Load from the API and replace the cache
+        val results: List<MovieData>? = queryAPIForMovies(applicationContext)
+        if (results != null){
+            val asCachedMovie = results.map { it.convertToCachedMovie() }
+            db.cachedMovieDao().clearCache()
+            db.cachedMovieDao().cacheMovies(asCachedMovie)
+            updateTimeStamp(applicationContext)
+        }
+
+        return@withContext results
+    }
+    else {
+        //Load from the cache
+        val cachedMovies = db.cachedMovieDao().getAllCached()
+        val asMovieData = cachedMovies.map { it.convertToMovieData() }
+        updateFavoritedValueFromDB(applicationContext, asMovieData)
+        return@withContext asMovieData
+    }
+}
+
+
+private fun updateTimeStamp(applicationContext: Context){
+    val prefs = applicationContext.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
+    prefs.edit().putLong(TIMESTAMP_KEY, System.currentTimeMillis()).apply()
+}
+
+
+private fun isCacheStale(applicationContext: Context): Boolean {
+    val prefs = applicationContext.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
+    val lastCacheTime = prefs.getLong(TIMESTAMP_KEY, 0L)
+    val cacheValidityDuration = 24 * 60 * 60 * 1000L // 24 hours in ms
+    return System.currentTimeMillis() - lastCacheTime > cacheValidityDuration
+}
+
+
+private suspend fun queryAPIForMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO)  {
     val movieList: List<MovieData>?
     val response = StringBuilder()
 
@@ -37,7 +78,7 @@ suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = with
         reader.close()
         connection.disconnect()
 
-        movieList = compileResponseToListOfMovies(response.toString())
+        movieList = compileJSONToListOfMovies(response.toString())
         updateFavoritedValueFromDB(applicationContext, movieList)
 
 
@@ -54,7 +95,7 @@ suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = with
 }
 
 
-fun compileResponseToListOfMovies(response: String): List<MovieData>? {
+fun compileJSONToListOfMovies(response: String): List<MovieData>? {
     if (response.startsWith("ERROR")){
         return null
     }
@@ -94,8 +135,6 @@ suspend fun updateFavoritedValueFromDB(applicationContext: Context, movies: List
 
     //Copy them over to the existing movies
     for (movieWrapper in movies){
-        if (allFavorites.contains(movieWrapper.movie.id)){
-            movieWrapper.isFavorited = true
-        }
+        movieWrapper.isFavorited = allFavorites.contains(movieWrapper.movie.id)
     }
 }
