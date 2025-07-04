@@ -43,10 +43,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.room.Database
 import com.greatmachine.movielibrary.db.MovieDatabaseInstance
+import com.greatmachine.movielibrary.utils.MovieData
 
 const val BROWSE_FAVS_KEY = "browseFavs"
 
@@ -75,7 +73,7 @@ class BrowseActivity : ComponentActivity() {
 
     fun getMoviesFromAPI() {
         lifecycleScope.launch {
-            val result: List<Movie>? = discoverMovies(applicationContext)
+            val result: List<MovieData>? = discoverMovies(applicationContext)
 
             if (result.isNullOrEmpty()){
                 uiState = MoviesQueryState.Error
@@ -90,8 +88,13 @@ class BrowseActivity : ComponentActivity() {
     fun getMoviesFromDatabase() {
         lifecycleScope.launch{
             try{
-                val movies = MovieDatabaseInstance.getInstance(applicationContext)
-                    .movieDao().getAllFavorites()
+                val movies = MovieDatabaseInstance
+                                .getInstance(applicationContext)
+                                .favoriteMovieDao()
+                                .getAllFavorites()
+                                .map {
+                                    movie -> MovieData(movie = movie, isFavorited = true)
+                                }
 
                 uiState = MoviesQueryState.Success(movies)
             }
@@ -138,7 +141,7 @@ class BrowseActivity : ComponentActivity() {
 
 
     @Composable
-    fun LoadedContent(movies: List<Movie>) {
+    fun LoadedContent(movies: List<MovieData>) {
         val bannerText = if (browsingFavrourites) "My Favorurites" else "Discover New Movies"
 
         Column (
@@ -156,7 +159,7 @@ class BrowseActivity : ComponentActivity() {
 
 
     @Composable
-    fun MovieList(movies: List<Movie>) {
+    fun MovieList(movies: List<MovieData>) {
         LazyColumn (
             modifier = Modifier.fillMaxSize().background(Color.LightGray),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -169,8 +172,8 @@ class BrowseActivity : ComponentActivity() {
 
 
     @Composable
-    fun MovieItem(movie: Movie) {
-        var isFavorited by remember { mutableStateOf(movie.favorited) }
+    fun MovieItem(movieWrapper: MovieData) {
+        var isFavorited by remember { mutableStateOf(movieWrapper.isFavorited) }
 
 
         val contentDescription = if (isFavorited) "Un-Favorite" else "Favorite"
@@ -196,8 +199,8 @@ class BrowseActivity : ComponentActivity() {
                         .height(300.dp)
                 ) {
                     AsyncImage(
-                        model = movie.imgURL,
-                        contentDescription = "${movie.title} cover",
+                        model = movieWrapper.movie.imgURL,
+                        contentDescription = "${movieWrapper.movie.title} cover",
                         modifier = Modifier.fillMaxSize()
                     )
 
@@ -205,7 +208,7 @@ class BrowseActivity : ComponentActivity() {
                     IconButton(
                         onClick = {
                             isFavorited = !isFavorited
-                            toggleFavorite(movie)
+                            toggleFavorite(movieWrapper)
                         },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -222,7 +225,7 @@ class BrowseActivity : ComponentActivity() {
                     IconButton(
                         onClick = {
                             val intent = Intent(applicationContext, MovieDetailsActivity::class.java)
-                            intent.putExtra(MOVIE_ID_KEY, movie.id)
+                            intent.putExtra(MOVIE_ID_KEY, movieWrapper.movie.id)
                             startActivity(intent)
                         },
                         modifier = Modifier
@@ -237,7 +240,7 @@ class BrowseActivity : ComponentActivity() {
                 }
 
                 Text(
-                    text = movie.title,
+                    text = movieWrapper.movie.title,
                     fontSize = 20.sp,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -249,10 +252,17 @@ class BrowseActivity : ComponentActivity() {
     }
 
 
-    fun toggleFavorite(movie: Movie) : Unit {
+    fun toggleFavorite(movieWrapper: MovieData) : Unit {
         lifecycleScope.launch {
-            movie.favorited = !movie.favorited
-            MovieDatabaseInstance.getInstance(applicationContext).movieDao().saveMovie(movie)
+            val dbTable = MovieDatabaseInstance.getInstance(applicationContext).favoriteMovieDao()
+
+            movieWrapper.isFavorited = !movieWrapper.isFavorited
+            if(movieWrapper.isFavorited){
+                dbTable.saveMovie(movieWrapper.movie)
+            }
+            else {
+                dbTable.removeFavorite(movieWrapper.movie)
+            }
         }
     }
 }
@@ -260,7 +270,7 @@ class BrowseActivity : ComponentActivity() {
 
 sealed interface MoviesQueryState {
     object Loading : MoviesQueryState
-    data class Success(val movies: List<Movie>) : MoviesQueryState
+    data class Success(val movies: List<MovieData>) : MoviesQueryState
     object Error : MoviesQueryState
 }
 

@@ -3,10 +3,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "Movies")
+@Entity(tableName = "FavoriteMovies")
 data class Movie(
     @PrimaryKey val id: Int,
     val title: String,
     val imgURL: String,
-    var favorited: Boolean
 )

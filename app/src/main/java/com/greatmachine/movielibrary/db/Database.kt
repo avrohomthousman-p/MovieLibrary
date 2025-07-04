@@ -26,5 +26,5 @@ object MovieDatabaseInstance {
 
 @Database(entities = [Movie::class], version = 1)
 abstract class MovieDatabase : RoomDatabase() {
-    abstract fun movieDao(): MovieDao
+    abstract fun favoriteMovieDao(): FavoriteMovieDAO
 }

@@ -16,8 +16,8 @@ import java.net.URL
 const val BASE_URL = "https://image.tmdb.org/t/p/w500/"
 
 
-suspend fun discoverMovies(applicationContext: Context): List<Movie>? = withContext(Dispatchers.IO)  {
-    val movieList: List<Movie>?
+suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = withContext(Dispatchers.IO)  {
+    val movieList: List<MovieData>?
     val response = StringBuilder()
 
     val url = URL("https://api.themoviedb.org/3/trending/movie/day?language=en-US")
@@ -54,12 +54,12 @@ suspend fun discoverMovies(applicationContext: Context): List<Movie>? = withCont
 }
 
 
-fun compileResponseToListOfMovies(response: String): List<Movie>? {
+fun compileResponseToListOfMovies(response: String): List<MovieData>? {
     if (response.startsWith("ERROR")){
         return null
     }
 
-    val movies = ArrayList<Movie>()
+    val movies = ArrayList<MovieData>()
 
 
     val jsonData = JSONObject(response).getJSONArray("results")
@@ -67,33 +67,35 @@ fun compileResponseToListOfMovies(response: String): List<Movie>? {
         val data = jsonData.getJSONObject(i)
 
         val url = BASE_URL + data.getString("poster_path")
-        val movie = Movie(data.getInt("id"), data.getString("title"), url,false)
+        val movie = Movie(data.getInt("id"), data.getString("title"), url)
 
-        movies.add(movie)
+        movies.add(MovieData(movie, false))
     }
 
     return movies
 }
 
 
-suspend fun updateFavoritedValueFromDB(applicationContext: Context, movies: List<Movie>?){
+suspend fun updateFavoritedValueFromDB(applicationContext: Context, movies: List<MovieData>?){
     if (movies.isNullOrEmpty())
         return
 
 
     //Load correct favorited values from the DB
-    val movieIds = movies.map { it.id }
-    val correctFavValues = MovieDatabaseInstance
+    val movieIds = movies.map { it.movie.id }
+    val allFavorites = MovieDatabaseInstance
                 .getInstance(applicationContext)
-                .movieDao()
+                .favoriteMovieDao()
                 .getFavoritesFromMovieList(movieIds)
-                .associate { it.id to it.favorited }
+                .map { it.id }
+                .toSet()
+
 
 
     //Copy them over to the existing movies
-    for (movie in movies){
-        if (correctFavValues.containsKey(movie.id)){
-            movie.favorited = correctFavValues[movie.id]!!
+    for (movieWrapper in movies){
+        if (allFavorites.contains(movieWrapper.movie.id)){
+            movieWrapper.isFavorited = true
         }
     }
 }
