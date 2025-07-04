@@ -12,6 +12,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import androidx.core.content.edit
 
 
 const val BASE_URL = "https://image.tmdb.org/t/p/w500/"
@@ -56,7 +57,7 @@ suspend fun discoverMovies(applicationContext: Context): List<MovieData>? = with
  */
 private fun updateTimeStamp(applicationContext: Context){
     val prefs = applicationContext.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
-    prefs.edit().putLong(TIMESTAMP_KEY, System.currentTimeMillis()).apply()
+    prefs.edit { putLong(TIMESTAMP_KEY, System.currentTimeMillis()) }
 }
 
 

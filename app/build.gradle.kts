@@ -28,6 +28,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
+
+
+
         val accessToken: String = localProperties["ACCESS_TOKEN"] as? String
             ?: throw GradleException("ACCESS_TOKEN is missing from local.properties")
 
