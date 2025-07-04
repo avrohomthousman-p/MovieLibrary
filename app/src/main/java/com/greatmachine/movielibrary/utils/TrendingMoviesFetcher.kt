@@ -2,7 +2,7 @@ package com.greatmachine.movielibrary.utils
 
 import android.content.Context
 import com.greatmachine.movielibrary.BuildConfig
-import com.greatmachine.movielibrary.db.Movie
+import com.greatmachine.movielibrary.db.FavoritedMovie
 import com.greatmachine.movielibrary.db.MovieDatabaseInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -67,7 +67,7 @@ fun compileResponseToListOfMovies(response: String): List<MovieData>? {
         val data = jsonData.getJSONObject(i)
 
         val url = BASE_URL + data.getString("poster_path")
-        val movie = Movie(data.getInt("id"), data.getString("title"), url)
+        val movie = FavoritedMovie(data.getInt("id"), data.getString("title"), url)
 
         movies.add(MovieData(movie, false))
     }

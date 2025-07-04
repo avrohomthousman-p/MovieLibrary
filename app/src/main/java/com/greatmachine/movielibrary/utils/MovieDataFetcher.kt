@@ -1,7 +1,6 @@
 package com.greatmachine.movielibrary.utils
 
 import com.greatmachine.movielibrary.BuildConfig
-import com.greatmachine.movielibrary.db.Movie
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject

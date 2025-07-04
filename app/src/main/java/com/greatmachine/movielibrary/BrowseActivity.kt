@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
-import com.greatmachine.movielibrary.db.Movie
 import com.greatmachine.movielibrary.utils.discoverMovies
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue

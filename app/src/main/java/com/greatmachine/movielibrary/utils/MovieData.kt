@@ -1,6 +1,6 @@
 package com.greatmachine.movielibrary.utils
 
-import com.greatmachine.movielibrary.db.Movie
+import com.greatmachine.movielibrary.db.FavoritedMovie
 
 
 /**
@@ -8,6 +8,6 @@ import com.greatmachine.movielibrary.db.Movie
  * isn't in the database.
  */
 data class MovieData(
-    val movie: Movie,
+    val movie: FavoritedMovie,
     var isFavorited: Boolean
 )
